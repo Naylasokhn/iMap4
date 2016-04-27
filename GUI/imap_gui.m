@@ -972,7 +972,7 @@ if (check_trial == 1) && (check_estimated == 1)
         [answer, Mask,fixthres] = select_mask_parameter(FixMap,Mask,handles);
     end
     if isempty(answer)==0
-        
+       handles.fixthres = fixthres; 
         if (strcmp(answer_user,'Estimated Method'));
             handles.Mask_estimated = Mask;
             guidata(hObject,handles)
@@ -1003,49 +1003,51 @@ if (check_trial == 1) && (check_estimated == 1)
             end
         end
     end
-else if (check_trial)==1
-        answer =  1;
-        Mask =  handles.Mask_single_trial_scaled;
-        FixMap = handles.FixMap_single_trial_scaled;
-        while answer == 1
-            [answer, Mask,~] = select_mask_parameter(FixMap,Mask,handles);
+elseif (check_trial)==1
+    answer =  1;
+    Mask =  handles.Mask_single_trial_scaled;
+    FixMap = handles.FixMap_single_trial_scaled;
+    while answer == 1
+        [answer, Mask,~] = select_mask_parameter(FixMap,Mask,handles);
+    end
+    if isempty(answer)==0
+        handles.Mask_single_trial_scaled = Mask;
+        guidata(hObject,handles)
+    end
+else
+    answer =  1;
+    Mask =  handles.Mask_estimated;
+    FixMap = handles.FixMap_estimated;
+    while answer == 1
+        [answer, Mask,fixthres] = select_mask_parameter(FixMap,Mask,handles);
+    end
+    if isempty(answer)==0
+        handles.Mask_estimated = Mask;
+        handles.fixthres = fixthres;
+        
+        guidata(hObject,handles)
+        if isunix==0
+            save(strcat(handles.filename,'\Mask_estimated'),  'Mask','-v7.3')
+        else
+            save(strcat(handles.filename,'/Mask_estimated'),  'Mask','-v7.3')
         end
-        if isempty(answer)==0
-            handles.Mask_single_trial_scaled = Mask;
-            guidata(hObject,handles)
-        end
-    else
-        answer =  1;
-        Mask =  handles.Mask_estimated;
-        FixMap = handles.FixMap_estimated;
-        while answer == 1
-            [answer, Mask,fixthres] = select_mask_parameter(FixMap,Mask,handles);
-        end
-        if isempty(answer)==0
-            handles.Mask_estimated = Mask;
-            guidata(hObject,handles)
+        if isfield(handles,'FixMap_estimated_scaled')
+            Mask = squeeze(nanmean(handles.FixMap_estimated_scaled,1))>fixthres;
+            handles.Mask_estimated_scaled = Mask;
+            if isunix==0
+                save(strcat(handles.filename,'\Mask_estimated_scaled'),  'Mask','-v7.3')
+            else
+                save(strcat(handles.filename,'/Mask_estimated_scaled'),  'Mask','-v7.3')
+            end
+        else
             if isunix==0
                 save(strcat(handles.filename,'\Mask_estimated'),  'Mask','-v7.3')
             else
                 save(strcat(handles.filename,'/Mask_estimated'),  'Mask','-v7.3')
             end
-            if isfield(handles,'FixMap_estimated_scaled')
-                Mask = squeeze(nanmean(handles.FixMap_estimated_scaled,1))>fixthres;
-                handles.Mask_estimated_scaled = Mask;
-                if isunix==0
-                    save(strcat(handles.filename,'\Mask_estimated_scaled'),  'Mask','-v7.3')
-                else
-                    save(strcat(handles.filename,'/Mask_estimated_scaled'),  'Mask','-v7.3')
-                end
-            else
-                if isunix==0
-                    save(strcat(handles.filename,'\Mask_estimated'),  'Mask','-v7.3')
-                else
-                    save(strcat(handles.filename,'/Mask_estimated'),  'Mask','-v7.3')
-                end
-            end
         end
     end
+    
 end
 
 % --- Executes on button press in Modelling.
